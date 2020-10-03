@@ -11,13 +11,27 @@
 static bool verbose = false;
 static git_repository *repo;
 
-/* TODO: Make this more advanced */
 static void
 randtime(git_time *dest, git_commit *commit)
 {
-	dest->time = 0;
+	int offset;
+	struct tm *tm;
+	git_time_t ctime;
+	time_t t;
 
-	dest->offset = git_commit_time_offset(commit);
+	ctime = git_commit_time(commit);
+	offset = git_commit_time_offset(commit);
+
+	/* https://github.com/libgit2/libgit2/blob/79d0e0c10ffec81152b5b1eaeb47b59adf1d4bcc/examples/log.c#L321 */
+	t = (time_t)ctime + (offset * 60);
+
+	if (!(tm = gmtime(&t)))
+		errx(EXIT_FAILURE, "gmtime failed");
+	tm->tm_hour = rand() % 24; /* random hour on current date */
+
+	if ((dest->time = mktime(tm)) == (time_t)-1)
+		err(EXIT_FAILURE, "mktime failed");
+	dest->offset = 0; /* XXX: How do timezones work?! */
 	dest->sign = (dest->offset < 0) ? '-' : '+';
 }
 
@@ -94,6 +108,9 @@ main(int argc, char **argv)
 	int opt;
 	static char cwd[PATH_MAX + 1];
 	static git_buf rfp;
+
+	/* Seed PRNG with current time for now */
+	srand(time(NULL));
 
 	if (!getcwd(cwd, sizeof(cwd)))
 		err(EXIT_FAILURE, "getcwd failed");
