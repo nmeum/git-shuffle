@@ -1,12 +1,22 @@
 #include <err.h>
+#include <libgen.h>
 #include <limits.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #include "git2.h"
 
+static bool verbose = false;
 static git_repository *repo;
+
+static void
+usage(char *prog)
+{
+	fprintf(stderr, "USAGE: %s [-v]\n", basename(prog));
+	exit(EXIT_FAILURE);
+}
 
 /* TODO: Make this more advanced */
 static void
@@ -16,6 +26,15 @@ randtime(git_time *dest, git_commit *commit)
 
 	dest->offset = git_commit_time_offset(commit);
 	dest->sign = (dest->offset < 0) ? '-' : '+';
+}
+
+static void
+pcommit(git_commit *commit)
+{
+	char buf[GIT_OID_HEXSZ + 1];
+
+	git_oid_tostr(buf, sizeof(buf), git_commit_id(commit));
+	printf("Updating time of commit %s\n", buf);
 }
 
 static void
@@ -31,9 +50,8 @@ shuftimes(git_rebase *rebase)
 
 		if (git_commit_lookup(&commit, repo, &op->id))
 			err(EXIT_FAILURE, "git_commit_lookup failed");
-
-		/* TODO: Optional verbose output */
-		/* printf("commit: %s\n", git_commit_message(commit)); */
+		if (verbose)
+			pcommit(commit);
 
 		origauth = git_commit_author(commit);
 		if (git_signature_dup(&newauth, origauth))
@@ -78,15 +96,24 @@ rebase(void)
 }
 
 int
-main(void)
+main(int argc, char **argv)
 {
+	int opt;
 	static char cwd[PATH_MAX + 1];
 	static git_buf rfp;
 
 	if (!getcwd(cwd, sizeof(cwd)))
 		err(EXIT_FAILURE, "getcwd failed");
 
-	/* TODO: Parse command-line arguments */
+	while ((opt = getopt(argc, argv, "v")) != -1) {
+		switch (opt) {
+		case 'v':
+			verbose = true;
+			break;
+		default:
+			usage(argv[0]);
+		}
+	}
 
 	git_libgit2_init();
 	if (git_repository_discover(&rfp, cwd, 0, NULL))
