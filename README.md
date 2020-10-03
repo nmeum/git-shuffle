@@ -21,13 +21,13 @@ time information allows keeping coding hours private.
 
 The tool can be employed system-wide through global `githooks(5)`. In
 order to do so, `core.hooksPath` will need to be set in `git-config(1)`.
-Additionally, a `pre-push` hook which invokes `git-shuffle` must be
+Additionally, a `post-commit` hook which invokes `git-shuffle` must be
 created. For example using:
 
 	$ git config core.hooksPath ~/.config/git/hooks
 	$ mkdir -p ~/.config/git/hooks
-	$ printf "#!/bin/sh\ngit shuffle\n" > ~/.config/git/hooks/pre-push
-	$ chmod +x ~/.config/git/hooks/pre-push
+	$ printf "#!/bin/sh\ngit shuffle\n" > ~/.config/git/hooks/post-commit
+	$ chmod +x ~/.config/git/hooks/post-commit
 
 ## License
 
