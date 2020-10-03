@@ -11,13 +11,6 @@
 static bool verbose = false;
 static git_repository *repo;
 
-static void
-usage(char *prog)
-{
-	fprintf(stderr, "USAGE: %s [-v]\n", basename(prog));
-	exit(EXIT_FAILURE);
-}
-
 /* TODO: Make this more advanced */
 static void
 randtime(git_time *dest, git_commit *commit)
@@ -111,7 +104,8 @@ main(int argc, char **argv)
 			verbose = true;
 			break;
 		default:
-			usage(argv[0]);
+			fprintf(stderr, "USAGE: %s [-v]\n", basename(argv[0]));
+			return EXIT_FAILURE;
 		}
 	}
 
