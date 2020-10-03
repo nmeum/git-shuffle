@@ -52,13 +52,23 @@ static void
 rebase(void)
 {
 	git_rebase *rebase;
+	git_reference *lref, *uref;
+	const char *branch;
 	git_annotated_commit *upstream;
 
-	/* TODO: abort rebase on error */
+	/* TODO: Add more sanity checks here */
+	if (git_repository_head(&lref, repo))
+		errx(EXIT_FAILURE, "git_repository_head failed");
+	branch = git_reference_shorthand(lref);
+	if (git_branch_lookup(&lref, repo, branch, GIT_BRANCH_LOCAL))
+		errx(EXIT_FAILURE, "git_branch_lookup failed");
+	if (git_branch_upstream(&uref, lref))
+		errx(EXIT_FAILURE, "git_branch_upstream failed");
 
-	/* TODO: Don't hardcode origin/HEAD */
-	if (git_annotated_commit_from_revspec(&upstream, repo, "origin/HEAD"))
+	if (git_annotated_commit_from_ref(&upstream, repo, uref))
 		errx(EXIT_FAILURE, "git_annotated_commit_from_revspec failed");
+
+	/* TODO: abort rebase on error */
 	if (git_rebase_init(&rebase, repo, NULL, upstream, NULL, NULL))
 		errx(EXIT_FAILURE, "git_rebase_init failed");
 
