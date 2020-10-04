@@ -94,10 +94,10 @@ rebase(const char *revspec)
 		git_signature *author;
 
 		if (git_commit_lookup(&commit, repo, &op->id))
-			err(EXIT_FAILURE, "git_commit_lookup failed");
+			goto err;
 		author = redate(commit);
 		if (git_rebase_commit(&oid, rebase, author, author, NULL, NULL))
-			giterr("git_rebase_commit");
+			goto err;
 
 		git_commit_free(commit);
 		git_signature_free(author);
@@ -105,6 +105,12 @@ rebase(const char *revspec)
 
 	if (git_rebase_finish(rebase, NULL))
 		giterr("git_rebase_finish");
+	return;
+
+err:
+	warnx("rebase failed: %s", git_error_last());
+	if (git_rebase_abort(rebase))
+		giterr("git_rebase_abort");
 }
 
 static void
