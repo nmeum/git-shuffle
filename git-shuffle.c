@@ -10,6 +10,7 @@
 
 #include "git2.h"
 
+static bool amendsingle = true;
 static bool verbose = false;
 static git_repository *repo;
 
@@ -25,7 +26,7 @@ giterr(const char *fn)
 static void
 usage(char *prog)
 {
-	char *usage = "[-v] REVSPEC";
+	char *usage = "[-a] [-v] REVSPEC";
 
 	fprintf(stderr, "USAGE: %s %s\n", basename(prog), usage);
 	exit(EXIT_FAILURE);
@@ -55,13 +56,24 @@ randtime(git_time *dest, git_commit *commit)
 	dest->sign = (dest->offset < 0) ? '-' : '+';
 }
 
-static void
-pcommit(git_commit *commit)
+static git_signature *
+redate(git_commit *commit)
 {
 	char buf[GIT_OID_HEXSZ + 1];
+	git_signature *newauth;
+	const git_signature *origauth;
 
-	git_oid_tostr(buf, sizeof(buf), git_commit_id(commit));
-	printf("Updating time of commit %s\n", buf);
+	if (verbose) {
+		git_oid_tostr(buf, sizeof(buf), git_commit_id(commit));
+		printf("Updating time of commit %s\n", buf);
+	}
+
+	origauth = git_commit_author(commit);
+	if (git_signature_dup(&newauth, origauth))
+		err(EXIT_FAILURE, "git_signature_dup failed");
+	randtime(&newauth->when, commit);
+
+	return newauth;
 }
 
 static void
@@ -72,24 +84,16 @@ shuftimes(git_rebase *rebase)
 
 	while (!git_rebase_next(&op, rebase)) {
 		git_commit *commit;
-		git_signature *newauth;
-		const git_signature *origauth;
+		git_signature *author;
 
 		if (git_commit_lookup(&commit, repo, &op->id))
 			err(EXIT_FAILURE, "git_commit_lookup failed");
-		if (verbose)
-			pcommit(commit);
-
-		origauth = git_commit_author(commit);
-		if (git_signature_dup(&newauth, origauth))
-			err(EXIT_FAILURE, "git_signature_dup failed");
-		randtime(&newauth->when, commit);
-
-		if (git_rebase_commit(&oid, rebase, newauth, newauth, NULL, NULL))
+		author = redate(commit);
+		if (git_rebase_commit(&oid, rebase, author, author, NULL, NULL))
 			giterr("git_rebase_commit");
 
 		git_commit_free(commit);
-		git_signature_free(newauth);
+		git_signature_free(author);
 	}
 }
 
@@ -111,6 +115,27 @@ rebase(const char *revspec)
 		giterr("git_rebase_finish");
 }
 
+static void
+amend(const char *revspec)
+{
+	git_object *obj;
+	const git_oid *oid;
+	git_commit *commit;
+	git_signature *author;
+
+	if (git_revparse_single(&obj, repo, revspec))
+		giterr("git_revparse_single");
+	oid = git_object_id(obj);
+
+	if (git_commit_lookup(&commit, repo, oid))
+		giterr("git_commit_lookup");
+	printf("commid: %s\n", git_commit_message(commit));
+
+	author = redate(commit);
+	if (git_commit_amend(oid, commit, "HEAD", author, author, NULL, NULL, NULL))
+		giterr("git_commit_amend");
+}
+
 int
 main(int argc, char **argv)
 {
@@ -125,8 +150,11 @@ main(int argc, char **argv)
 	if (!getcwd(cwd, sizeof(cwd)))
 		err(EXIT_FAILURE, "getcwd failed");
 
-	while ((opt = getopt(argc, argv, "v")) != -1) {
+	while ((opt = getopt(argc, argv, "av")) != -1) {
 		switch (opt) {
+		case 'a':
+			amendsingle = true;
+			break;
 		case 'v':
 			verbose = true;
 			break;
@@ -146,5 +174,8 @@ main(int argc, char **argv)
 	if (git_repository_open(&repo, rfp.ptr))
 		giterr("git_repository_open");
 
-	rebase(revspec);
+	if (amendsingle)
+		amend(revspec);
+	else
+		rebase(revspec);
 }
