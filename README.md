@@ -1,6 +1,6 @@
 # git shuffle
 
-Randomize timestamps associated with Git commits.
+Randomize timestamps associated with Git commits to enhance privacy.
 
 ## Motivation
 
