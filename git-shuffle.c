@@ -114,27 +114,28 @@ err:
 }
 
 static void
-amend(const char *revspec)
+amend(void)
 {
-	git_object *obj;
-	const git_oid *oid;
 	git_oid oidcpy;
 	git_commit *commit;
-	git_signature *author;
-	git_reference *ref;
+	const git_oid *oid;
+	git_reference *head;
 	const char *refname;
+	git_signature *author;
+	git_annotated_commit *annotated;
 
-	if (git_revparse_ext(&obj, &ref, repo, revspec))
-		giterr("git_revparse_single");
-	if (!ref)
-		errx(EXIT_FAILURE, "failed to extract reference for revspec");
-	refname = git_reference_name(ref);
+	if (git_repository_head(&head, repo))
+		giterr("git_repository_head");
+	if (git_annotated_commit_from_ref(&annotated, repo, head))
+		giterr("git_annotated_commit_from_ref");
 
-	oid = git_object_id(obj);
-	if (git_commit_lookup(&commit, repo, oid))
-		giterr("git_commit_lookup");
+	oid = git_annotated_commit_id(annotated);
 	if (git_oid_cpy(&oidcpy, oid))
 		giterr("git_oid_cpy");
+
+	if (git_commit_lookup(&commit, repo, oid))
+		giterr("git_commit_lookup");
+	refname = git_reference_name(head);
 
 	author = redate(commit);
 	if (git_commit_amend(&oidcpy, commit, refname, author, author, NULL, NULL, NULL))
@@ -145,7 +146,6 @@ int
 main(int argc, char **argv)
 {
 	int opt;
-	const char *revspec;
 	static char cwd[PATH_MAX + 1];
 	static git_buf rfp;
 
@@ -169,18 +169,17 @@ main(int argc, char **argv)
 		}
 	}
 
-	if (argc <= 1 || optind >= argc)
-		usage(argv[0]);
-	revspec = argv[optind];
-
 	git_libgit2_init();
 	if (git_repository_discover(&rfp, cwd, 0, NULL))
 		giterr("git_repository_discover");
 	if (git_repository_open(&repo, rfp.ptr))
 		giterr("git_repository_open");
 
-	if (amendsingle)
-		amend(revspec);
-	else
-		rebase(revspec);
+	if (amendsingle) {
+		amend();
+	} else {
+		if (argc <= 1 || optind >= argc)
+			usage(argv[0]);
+		rebase(argv[1]);
+	}
 }
