@@ -1,5 +1,6 @@
 #include <err.h>
 #include <libgen.h>
+#include <libgen.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -10,6 +11,15 @@
 
 static bool verbose = false;
 static git_repository *repo;
+
+static void
+usage(char *prog)
+{
+	char *usage = "[-v] REVSPEC";
+
+	fprintf(stderr, "USAGE: %s %s\n", basename(prog), usage);
+	exit(EXIT_FAILURE);
+}
 
 static void
 randtime(git_time *dest, git_commit *commit)
@@ -74,23 +84,12 @@ shuftimes(git_rebase *rebase)
 }
 
 static void
-rebase(void)
+rebase(const char *revspec)
 {
 	git_rebase *rebase;
-	git_reference *lref, *uref;
-	const char *branch;
 	git_annotated_commit *upstream;
 
-	/* TODO: Add more sanity checks here */
-	if (git_repository_head(&lref, repo))
-		errx(EXIT_FAILURE, "git_repository_head failed");
-	branch = git_reference_shorthand(lref);
-	if (git_branch_lookup(&lref, repo, branch, GIT_BRANCH_LOCAL))
-		errx(EXIT_FAILURE, "git_branch_lookup failed");
-	if (git_branch_upstream(&uref, lref))
-		errx(EXIT_FAILURE, "git_branch_upstream failed");
-
-	if (git_annotated_commit_from_ref(&upstream, repo, uref))
+	if (git_annotated_commit_from_revspec(&upstream, repo, revspec))
 		errx(EXIT_FAILURE, "git_annotated_commit_from_revspec failed");
 
 	/* TODO: abort rebase on error */
@@ -106,6 +105,7 @@ int
 main(int argc, char **argv)
 {
 	int opt;
+	const char *revspec;
 	static char cwd[PATH_MAX + 1];
 	static git_buf rfp;
 
@@ -121,10 +121,14 @@ main(int argc, char **argv)
 			verbose = true;
 			break;
 		default:
-			fprintf(stderr, "USAGE: %s [-v]\n", basename(argv[0]));
-			return EXIT_FAILURE;
+			usage(argv[0]);
+			break;
 		}
 	}
+
+	if (argc <= 1 || optind >= argc)
+		usage(argv[0]);
+	revspec = argv[optind];
 
 	git_libgit2_init();
 	if (git_repository_discover(&rfp, cwd, 0, NULL))
@@ -132,5 +136,5 @@ main(int argc, char **argv)
 	if (git_repository_open(&repo, rfp.ptr))
 		errx(EXIT_FAILURE, "git_repository_open failed");
 
-	rebase();
+	rebase(revspec);
 }
