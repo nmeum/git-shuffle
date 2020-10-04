@@ -1,8 +1,10 @@
 #include <err.h>
+#include <fcntl.h>
 #include <libgen.h>
 #include <libgen.h>
 #include <limits.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -30,6 +32,21 @@ usage(char *prog)
 
 	fprintf(stderr, "USAGE: %s %s\n", basename(prog), usage);
 	exit(EXIT_FAILURE);
+}
+
+static void
+initrand(void)
+{
+	uint8_t seed;
+	int fd;
+
+	if ((fd = open("/dev/random", O_RDONLY)) == -1)
+		err(EXIT_FAILURE, "open failed");
+	if (read(fd, &seed, 1) != 1)
+		errx(EXIT_FAILURE, "read from /dev/random failed");
+
+	close(fd);
+	srand(seed);
 }
 
 static void
@@ -149,9 +166,7 @@ main(int argc, char **argv)
 	static char cwd[PATH_MAX + 1];
 	static git_buf rfp;
 
-	/* Seed PRNG with current time for now */
-	srand(time(NULL));
-
+	initrand();
 	if (!getcwd(cwd, sizeof(cwd)))
 		err(EXIT_FAILURE, "getcwd failed");
 
