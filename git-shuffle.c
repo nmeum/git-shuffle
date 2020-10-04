@@ -9,7 +9,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "git2.h"
+#include <git2.h>
 
 static bool amend_single = false;
 static bool verbose = false;
