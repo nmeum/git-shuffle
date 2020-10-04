@@ -1,6 +1,18 @@
 # git shuffle
 
-Randomize dates of commits before pushing.
+Randomize timestamps associated with Git commits.
+
+## Motivation
+
+Git associates timestamps with commits. These timestamps expose coding
+hours and thereby potentially violate ones privacy. This tool randomizes
+the hour of the day, as contained in these timestamps, to enhance
+privacy. The tool can be employed automatically for all Git repository
+through global `githooks(5)` (see below).
+
+## Status
+
+More or less feature complete but not well tested yet.
 
 ## Installation
 
@@ -9,25 +21,33 @@ installed successfully, compile this software as follows:
 
 	make
 
+Afterwards, the software can be installed system-wide using:
+
+	make install
+
 ## Usage
 
-On invocation this software performs a rebase operation beginning from
-the latest commit on the upstream branch for the current branch. The
-time information associated with the committer and author of affected
-commits is modified. The hour encoded in the time information is
-randomized. Future versions of this software may allow configuring this
-behaviour further, e.g. to also randomize commit dates.  Randomizing
-time information allows keeping coding hours private. 
+This tool can be invoked manually from a Git repository. For example,
+the following command would randomize timestamps of all unpushed
+commits:
 
-The tool can be employed system-wide through global `githooks(5)`. In
-order to do so, `core.hooksPath` will need to be set in `git-config(1)`.
-Additionally, a `post-commit` hook which invokes `git-shuffle` must be
-created. For example using:
+	$ git shuffle origin/HEAD..HEAD
 
-	$ git config core.hooksPath ~/.config/git/hooks
+However, it is likely desirable to automate this process through global
+`githooks(5)`. For this purpose `core.hooksPath` will need to be set
+using `git-config(1)`. Additionally, a `post-commit` must be created
+which amends the previously created commit. For example using:
+
+	$ git config --global core.hooksPath ~/.config/git/hooks
 	$ mkdir -p ~/.config/git/hooks
-	$ printf "#!/bin/sh\ngit shuffle\n" > ~/.config/git/hooks/post-commit
+	$ printf "#!/bin/sh\ngit shuffle -a\n" > ~/.config/git/hooks/post-commit
 	$ chmod +x ~/.config/git/hooks/post-commit
+
+## Related Work
+
+The [git-privacy][git-privacy repo] utility shares the same goals but
+has way more configuration options and is thus more complicated.
+Furthermore, it doesn't utilize [libgit2][libgit2 website].
 
 ## License
 
@@ -44,4 +64,5 @@ Public License for more details.
 You should have received a copy of the GNU General Public License along
 with this program. If not, see <http://www.gnu.org/licenses/>.
 
-[libgit2]: https://libgit2.org/
+[libgit2 website]: https://libgit2.org/
+[git-privacy repo]: https://github.com/EMPRI-DEVOPS/git-privacy
