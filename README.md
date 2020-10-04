@@ -1,4 +1,4 @@
-# git shuffle
+# git-shuffle
 
 Randomize timestamps associated with Git commits to enhance privacy.
 
