@@ -77,10 +77,17 @@ redate(git_commit *commit)
 }
 
 static void
-shuftimes(git_rebase *rebase)
+rebase(const char *revspec)
 {
 	git_oid oid;
+	git_rebase *rebase;
+	git_annotated_commit *upstream;
 	git_rebase_operation *op;
+
+	if (git_annotated_commit_from_revspec(&upstream, repo, revspec))
+		giterr("git_annotated_commit_from_revspec");
+	if (git_rebase_init(&rebase, repo, NULL, upstream, NULL, NULL))
+		giterr("git_rebase_init");
 
 	while (!git_rebase_next(&op, rebase)) {
 		git_commit *commit;
@@ -95,22 +102,7 @@ shuftimes(git_rebase *rebase)
 		git_commit_free(commit);
 		git_signature_free(author);
 	}
-}
 
-static void
-rebase(const char *revspec)
-{
-	git_rebase *rebase;
-	git_annotated_commit *upstream;
-
-	if (git_annotated_commit_from_revspec(&upstream, repo, revspec))
-		giterr("git_annotated_commit_from_revspec");
-
-	/* TODO: abort rebase on error */
-	if (git_rebase_init(&rebase, repo, NULL, upstream, NULL, NULL))
-		giterr("git_rebase_init");
-
-	shuftimes(rebase);
 	if (git_rebase_finish(rebase, NULL))
 		giterr("git_rebase_finish");
 }
