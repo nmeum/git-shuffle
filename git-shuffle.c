@@ -194,6 +194,6 @@ main(int argc, char **argv)
 	} else {
 		if (argc <= 1 || optind >= argc)
 			usage(argv[0]);
-		rebase(argv[1]);
+		rebase(argv[optind]);
 	}
 }
