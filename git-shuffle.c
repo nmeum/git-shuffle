@@ -14,6 +14,15 @@ static bool verbose = false;
 static git_repository *repo;
 
 static void
+giterr(const char *fn)
+{
+	const git_error *err;
+
+	err = git_error_last();
+	errx(EXIT_FAILURE, "%s failed: %s", fn, err->message);
+}
+
+static void
 usage(char *prog)
 {
 	char *usage = "[-v] REVSPEC";
@@ -77,7 +86,7 @@ shuftimes(git_rebase *rebase)
 		randtime(&newauth->when, commit);
 
 		if (git_rebase_commit(&oid, rebase, newauth, newauth, NULL, NULL))
-			errx(EXIT_FAILURE, "git_rebase_commit failed");
+			giterr("git_rebase_commit");
 
 		git_commit_free(commit);
 		git_signature_free(newauth);
@@ -91,15 +100,15 @@ rebase(const char *revspec)
 	git_annotated_commit *upstream;
 
 	if (git_annotated_commit_from_revspec(&upstream, repo, revspec))
-		errx(EXIT_FAILURE, "git_annotated_commit_from_revspec failed");
+		giterr("git_annotated_commit_from_revspec");
 
 	/* TODO: abort rebase on error */
 	if (git_rebase_init(&rebase, repo, NULL, upstream, NULL, NULL))
-		errx(EXIT_FAILURE, "git_rebase_init failed");
+		giterr("git_rebase_init");
 
 	shuftimes(rebase);
 	if (git_rebase_finish(rebase, NULL))
-		errx(EXIT_FAILURE, "git_revwalk_finish");
+		giterr("git_rebase_finish");
 }
 
 int
@@ -133,9 +142,9 @@ main(int argc, char **argv)
 
 	git_libgit2_init();
 	if (git_repository_discover(&rfp, cwd, 0, NULL))
-		errx(EXIT_FAILURE, "git_repository_discover failed");
+		giterr("git_repository_discover");
 	if (git_repository_open(&repo, rfp.ptr))
-		errx(EXIT_FAILURE, "git_repository_open failed");
+		giterr("git_repository_open");
 
 	rebase(revspec);
 }
