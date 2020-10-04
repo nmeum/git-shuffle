@@ -1,0 +1,58 @@
+.Dd $Mdocdate: October 4 2020 $
+.Dt GIT-SHUFFLE 1
+.Sh NAME
+.Nm git-shuffle
+.Nd randomize timestamps of git commits
+.Sh SYNOPSIS
+.Nm git-shuffle
+.Op Fl a
+.Op Fl v
+.Ar refspec
+.Sh DESCRIPTION
+The
+.Xr git-commit 1
+utility associates timestamps with each commit.
+This exposes coding hours and may be perceived as a privacy violation.
+The
+.Nm
+utility mitigates this pitfall by randomizing timestamps associated with existing commits.
+Currently, only the hour of the day is randomized while all other timing information is left in tact.
+.Pp
+As these timestamps are part of the commit object, doing so requires
+.Nm
+to rewrite the existing
+.Xr git 1
+history. Two approaches are supported for doing so:
+.Bl -diag -offset indent -width 0
+.It Rebasing
+This is the default strategy, it rebases all commits according to the
+given
+.Ar refspec ,
+only modifying commit timestamps.
+.It Amending
+Contrary to rebasing, this strategy only modifies the tip of the current branch.
+Primarily intended to be used from
+.Xr githooks 5 .
+.El
+.Pp
+The options are as follows
+.Bl -tag -width Ds
+.It Fl a
+Amend the tip of the branch instead of rebasing.
+This causes the
+.Ar refspec
+argument to be ignored.
+.It Fl v
+Activate verbose output.
+For each modified commit write the commit hash to standard output.
+.El
+.Sh EXIT STATUS
+.Ex -std git-shuffle
+.Sh SEE ALSO
+.Xr git-commit 1 ,
+.Xr git-rebase 1 ,
+.Xr githooks 5
+.Sh AUTHORS
+.An Sören Tempel Aq Mt soeren@soeren-tempel.net
+.Sh CAVEATS
+The utility modifies timing information of committer and author.
