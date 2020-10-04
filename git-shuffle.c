@@ -118,7 +118,7 @@ amend(const char *revspec)
 {
 	git_object *obj;
 	const git_oid *oid;
-	git_oid *oidcpy;
+	git_oid oidcpy;
 	git_commit *commit;
 	git_signature *author;
 	git_reference *ref;
@@ -131,12 +131,11 @@ amend(const char *revspec)
 	oid = git_object_id(obj);
 	if (git_commit_lookup(&commit, repo, oid))
 		giterr("git_commit_lookup");
-	oidcpy = NULL;
-	if (git_oid_cpy(oidcpy, oid))
+	if (git_oid_cpy(&oidcpy, oid))
 		giterr("git_oid_cpy");
 
 	author = redate(commit);
-	if (git_commit_amend(oidcpy, commit, refname, author, author, NULL, NULL, NULL))
+	if (git_commit_amend(&oidcpy, commit, refname, author, author, NULL, NULL, NULL))
 		giterr("git_commit_amend");
 }
 
