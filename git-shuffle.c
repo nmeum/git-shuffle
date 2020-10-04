@@ -122,17 +122,19 @@ amend(const char *revspec)
 	const git_oid *oid;
 	git_commit *commit;
 	git_signature *author;
+	git_reference *ref;
+	const char *refname;
 
-	if (git_revparse_single(&obj, repo, revspec))
+	if (git_revparse_ext(&obj, &ref, repo, revspec))
 		giterr("git_revparse_single");
+	refname = git_reference_name(ref);
 	oid = git_object_id(obj);
 
 	if (git_commit_lookup(&commit, repo, oid))
 		giterr("git_commit_lookup");
-	printf("commid: %s\n", git_commit_message(commit));
 
 	author = redate(commit);
-	if (git_commit_amend(oid, commit, "HEAD", author, author, NULL, NULL, NULL))
+	if (git_commit_amend(oid, commit, refname, author, author, NULL, NULL, NULL))
 		giterr("git_commit_amend");
 }
 
