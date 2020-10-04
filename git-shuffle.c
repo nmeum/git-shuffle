@@ -27,7 +27,7 @@ giterr(const char *fn)
 static void
 usage(char *prog)
 {
-	char *usage = "[-a] [-v] REVSPEC";
+	const char *usage = "[-a] [-v] REVSPEC";
 
 	fprintf(stderr, "USAGE: %s %s\n", basename(prog), usage);
 	exit(EXIT_FAILURE);
