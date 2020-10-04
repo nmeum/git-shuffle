@@ -126,6 +126,8 @@ amend(const char *revspec)
 
 	if (git_revparse_ext(&obj, &ref, repo, revspec))
 		giterr("git_revparse_single");
+	if (!ref)
+		errx(EXIT_FAILURE, "failed to extract reference for revspec");
 	refname = git_reference_name(ref);
 
 	oid = git_object_id(obj);
