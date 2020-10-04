@@ -10,7 +10,7 @@
 
 #include "git2.h"
 
-static bool amendsingle = false;
+static bool amend_single = false;
 static bool verbose = false;
 static git_repository *repo;
 
@@ -158,7 +158,7 @@ main(int argc, char **argv)
 	while ((opt = getopt(argc, argv, "av")) != -1) {
 		switch (opt) {
 		case 'a':
-			amendsingle = true;
+			amend_single = true;
 			break;
 		case 'v':
 			verbose = true;
@@ -175,7 +175,7 @@ main(int argc, char **argv)
 	if (git_repository_open(&repo, rfp.ptr))
 		giterr("git_repository_open");
 
-	if (amendsingle) {
+	if (amend_single) {
 		amend();
 	} else {
 		if (argc <= 1 || optind >= argc)
