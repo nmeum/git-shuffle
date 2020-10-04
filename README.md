@@ -29,9 +29,9 @@ Afterwards, the software can be installed system-wide using:
 
 This tool can be invoked manually from a Git repository. For example,
 the following command would randomize timestamps of all unpushed
-commits:
+commits on the `master` branch:
 
-	$ git shuffle origin/HEAD..HEAD
+	$ git shuffle origin/master
 
 However, it is likely desirable to automate this process through global
 `githooks(5)`. For this purpose `core.hooksPath` will need to be set
