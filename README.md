@@ -29,7 +29,7 @@ Afterwards, the software can be installed system-wide using:
 
 This tool can be invoked manually from a Git repository. For example,
 the following command would randomize timestamps of all unpushed
-commits on the `master` branch:
+commits on the `master` branch (i.e. behaves like `git-rebase(1)`):
 
 	$ git shuffle origin/master
 
