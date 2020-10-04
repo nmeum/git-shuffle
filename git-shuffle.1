@@ -27,8 +27,11 @@ Two approaches are supported for doing so:
 .It Rebasing
 This is the default strategy, it rebases all commits according to the
 given
-.Ar refspec ,
-only modifying commit timestamps.
+.Ar refspec .
+The
+.Ar refspec
+syntax is further described in
+.Xr gitrevisions 7 .
 .It Amending
 Contrary to rebasing, this strategy only modifies the tip of the current branch.
 Primarily intended to be used from
