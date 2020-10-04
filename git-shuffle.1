@@ -1,5 +1,6 @@
 .Dd $Mdocdate: October 4 2020 $
 .Dt GIT-SHUFFLE 1
+.Os
 .Sh NAME
 .Nm git-shuffle
 .Nd randomize timestamps of git commits
@@ -20,10 +21,9 @@ Currently, only the hour of the day is randomized while all other timing informa
 .Pp
 As these timestamps are part of the commit object, doing so requires
 .Nm
-to rewrite the existing
-.Xr git 1
-history. Two approaches are supported for doing so:
-.Bl -diag -offset indent -width 0
+to rewrite the existing Git history.
+Two approaches are supported for doing so:
+.Bl -diag -offset indent
 .It Rebasing
 This is the default strategy, it rebases all commits according to the
 given
