@@ -43,6 +43,8 @@ which amends the previously created commit. For example using:
 	$ printf "#!/bin/sh\ngit shuffle -a\n" > ~/.config/git/hooks/post-commit
 	$ chmod +x ~/.config/git/hooks/post-commit
 
+Program usage is described further in the provided man page.
+
 ## Related Work
 
 The [git-privacy][git-privacy repo] utility shares the same goals but
