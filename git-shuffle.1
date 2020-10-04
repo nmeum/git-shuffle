@@ -19,7 +19,7 @@ The
 utility mitigates this pitfall by randomizing timestamps associated with existing commits.
 Currently, only the hour of the day is randomized while all other timing information is left in tact.
 .Pp
-As these timestamps are part of the commit object, doing so requires
+As Git timestamps are part of the commit object, doing so requires
 .Nm
 to rewrite the existing Git history.
 Two approaches are supported for doing so:
