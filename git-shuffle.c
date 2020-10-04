@@ -4,7 +4,6 @@
 #include <libgen.h>
 #include <limits.h>
 #include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -37,12 +36,12 @@ usage(char *prog)
 static void
 initrand(void)
 {
-	uint8_t seed;
 	int fd;
+	unsigned int seed;
 
 	if ((fd = open("/dev/random", O_RDONLY)) == -1)
 		err(EXIT_FAILURE, "open failed");
-	if (read(fd, &seed, 1) != 1)
+	if (read(fd, &seed, sizeof(seed)) != sizeof(seed))
 		errx(EXIT_FAILURE, "read from /dev/random failed");
 
 	close(fd);
