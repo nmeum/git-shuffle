@@ -10,7 +10,7 @@
 
 #include "git2.h"
 
-static bool amendsingle = true;
+static bool amendsingle = false;
 static bool verbose = false;
 static git_repository *repo;
 
