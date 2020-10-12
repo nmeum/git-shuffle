@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -46,27 +47,22 @@ initrand(void)
 }
 
 static void
-randtime(git_time *dest, git_commit *commit)
+randtime(git_time *dest, const git_time *orig)
 {
-	int offset;
 	struct tm *tm;
-	git_time_t ctime;
-	time_t t;
-
-	ctime = git_commit_time(commit);
-	offset = git_commit_time_offset(commit);
+	time_t t, newtime;
 
 	/* https://github.com/libgit2/libgit2/blob/79d0e0c10ffec81152b5b1eaeb47b59adf1d4bcc/examples/log.c#L321 */
-	t = (time_t)ctime + (offset * 60);
+	t = (time_t)orig->time + (orig->offset * 60);
 
 	if (!(tm = gmtime(&t)))
 		errx(EXIT_FAILURE, "gmtime failed");
 	tm->tm_hour = rand() % 24; /* random hour on current date */
 
-	if ((dest->time = mktime(tm)) == (time_t)-1)
+	memcpy(dest, orig, sizeof(git_time));
+	if ((newtime = mktime(tm)) == (time_t)-1)
 		err(EXIT_FAILURE, "mktime failed");
-	dest->offset = 0; /* XXX: How do timezones work?! */
-	dest->sign = (dest->offset < 0) ? '-' : '+';
+	dest->time = newtime;
 }
 
 static git_signature *
@@ -84,7 +80,7 @@ redate(git_commit *commit)
 	origauth = git_commit_author(commit);
 	if (git_signature_dup(&newauth, origauth))
 		err(EXIT_FAILURE, "git_signature_dup failed");
-	randtime(&newauth->when, commit);
+	randtime(&newauth->when, &origauth->when);
 
 	return newauth;
 }
