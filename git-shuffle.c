@@ -1,5 +1,4 @@
 #include <err.h>
-#include <fcntl.h>
 #include <libgen.h>
 #include <libgen.h>
 #include <limits.h>
@@ -36,15 +35,13 @@ usage(char *prog)
 static void
 initrand(void)
 {
-	int fd;
-	unsigned int seed;
+	unsigned seed;
+	time_t curtime;
 
-	if ((fd = open("/dev/random", O_RDONLY)) == -1)
-		err(EXIT_FAILURE, "open failed");
-	if (read(fd, &seed, sizeof(seed)) != sizeof(seed))
-		errx(EXIT_FAILURE, "read from /dev/random failed");
-
-	close(fd);
+	if ((curtime = time(NULL)) == -1)
+		err(EXIT_FAILURE, "seeding PRNG with time(3) failed");
+	
+	seed = (unsigned)curtime;
 	srand(seed);
 }
 
