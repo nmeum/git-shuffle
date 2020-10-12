@@ -35,8 +35,8 @@ commits on the `master` branch (i.e. behaves like `git-rebase(1)`):
 
 However, it is likely desirable to automate this process through global
 `githooks(5)`. For this purpose `core.hooksPath` will need to be set
-using `git-config(1)`. Additionally, a `post-commit` must be created
-which amends the previously created commit. For example using:
+using `git-config(1)`. Additionally, a `post-commit` hook must be
+created which amends the previously created commit. For example using:
 
 	$ git config --global core.hooksPath ~/.config/git/hooks
 	$ mkdir -p ~/.config/git/hooks
