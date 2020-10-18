@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include <git2.h>
+#include <sys/types.h>
 
 static bool amend_single = false;
 static bool verbose = false;
@@ -36,14 +37,13 @@ usage(char *prog)
 static void
 initrand(void)
 {
-	unsigned seed;
-	time_t curtime;
-
-	if ((curtime = time(NULL)) == -1)
-		err(EXIT_FAILURE, "seeding PRNG with time(3) failed");
-	
-	seed = (unsigned)curtime;
-	srand(seed);
+	/* Properly seeding rand(3) is really annoying in a POSIX
+	 * environment where arc4random(3) and getentropy(3) are not
+	 * available and reading from /dev/(u)random can potentially
+	 * fail. Seeding with the current time also seems like a bad
+	 * idea as the PRNG values are ultimately used to generate a
+	 * new time. For this reason, seed with the PID for now. */
+	srand((unsigned)getpid());
 }
 
 static void
