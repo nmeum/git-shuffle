@@ -49,8 +49,8 @@ initrand(void)
 static void
 randtime(git_time *dest, const git_time *orig)
 {
+	time_t t;
 	struct tm *tm;
-	time_t t, newtime;
 
 	/* https://github.com/libgit2/libgit2/blob/79d0e0c10ffec81152b5b1eaeb47b59adf1d4bcc/examples/log.c#L321 */
 	t = (time_t)orig->time + (orig->offset * 60);
@@ -59,10 +59,12 @@ randtime(git_time *dest, const git_time *orig)
 		errx(EXIT_FAILURE, "gmtime failed");
 	tm->tm_hour = rand() % 24; /* random hour on current date */
 
+	/* convert broken-down time to UTC epoch and use the
+	 * offset given in orig to convert it to a local time */
 	memcpy(dest, orig, sizeof(git_time));
-	if ((newtime = mktime(tm)) == (time_t)-1)
+	if ((dest->time = timegm(tm)) == (time_t)-1)
 		err(EXIT_FAILURE, "mktime failed");
-	dest->time = newtime;
+	dest->time -= orig->offset * 60; /* convert back to local time */
 }
 
 static git_signature *

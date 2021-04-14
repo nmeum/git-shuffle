@@ -4,7 +4,7 @@ MANDIR ?= $(PREFIX)/share/man
 DOCDIR ?= $(PREFIX)/share/doc/git-shuffle
 
 CFLAGS ?= -O0 -g -Werror
-CFLAGS += -std=c99 -D_POSIX_C_SOURCE=200809L
+CFLAGS += -std=c99 -D_BSD_SOURCE -D_POSIX_C_SOURCE=200809L
 CFLAGS += -Wpedantic -Wall -Wextra -Wconversion \
 	      -Wmissing-prototypes -Wpointer-arith \
 	      -Wstrict-prototypes -Wshadow -Wformat
