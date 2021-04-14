@@ -12,7 +12,7 @@ through global `githooks(5)` (see below).
 
 ## Status
 
-More or less feature complete but not well tested yet.
+I use this daily, works entirely fine for my purposes as is.
 
 ## Installation
 
