@@ -3,6 +3,7 @@
 #include <libgen.h>
 #include <limits.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,29 +36,24 @@ usage(char *prog)
 }
 
 static void
-initrand(void)
-{
-	/* Properly seeding rand(3) is really annoying in a POSIX
-	 * environment where arc4random(3) and getentropy(3) are not
-	 * available and reading from /dev/(u)random can potentially
-	 * fail. Seeding with the current time also seems like a bad
-	 * idea as the PRNG values are ultimately used to generate a
-	 * new time. For this reason, seed with the PID for now. */
-	srand((unsigned)getpid());
-}
-
-static void
 randtime(git_time *dest, const git_time *orig)
 {
 	time_t t;
 	struct tm *tm;
+	uint8_t rbytes[3];
+
+	if (getentropy(&rbytes, sizeof(rbytes)) == -1)
+		err(EXIT_FAILURE, "getentropy failed");
 
 	/* https://github.com/libgit2/libgit2/blob/79d0e0c10ffec81152b5b1eaeb47b59adf1d4bcc/examples/log.c#L321 */
 	t = (time_t)orig->time + (orig->offset * 60);
-
 	if (!(tm = gmtime(&t)))
 		errx(EXIT_FAILURE, "gmtime failed");
-	tm->tm_hour = rand() % 24; /* random hour on current date */
+
+	/* randomize time but retain current date */
+	tm->tm_hour = rbytes[0] % 24;
+	tm->tm_min  = rbytes[1] % 60;
+	tm->tm_sec  = rbytes[2] % 60;
 
 	/* convert broken-down time to UTC epoch and use the
 	 * offset given in orig to convert it to a local time */
@@ -160,7 +156,6 @@ main(int argc, char **argv)
 	static char cwd[PATH_MAX + 1];
 	static git_buf rfp;
 
-	initrand();
 	if (!getcwd(cwd, sizeof(cwd)))
 		err(EXIT_FAILURE, "getcwd failed");
 
