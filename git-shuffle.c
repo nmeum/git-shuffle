@@ -59,7 +59,7 @@ randtime(git_time *dest, const git_time *orig)
 	 * offset given in orig to convert it to a local time */
 	memcpy(dest, orig, sizeof(git_time));
 	if ((dest->time = timegm(tm)) == (time_t)-1)
-		err(EXIT_FAILURE, "mktime failed");
+		err(EXIT_FAILURE, "timegm failed");
 	dest->time -= orig->offset * 60; /* convert back to local time */
 }
 
