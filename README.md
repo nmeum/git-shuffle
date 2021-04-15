@@ -45,6 +45,13 @@ created which amends the previously created commit. For example using:
 
 Program usage is described further in the provided man page.
 
+## Portability
+
+This code requires `getentropy(3)` (which is available on Linux and
+OpenBSD but not mandated by POSIX) and `timegm(3)` and `err.h` which are
+also not mandated by POSIX but widely available on both Linux and BSD
+systems.
+
 ## Related Work
 
 The [git-privacy][git-privacy repo] utility shares the same goals but
