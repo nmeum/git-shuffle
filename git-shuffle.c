@@ -15,6 +15,7 @@
 
 static bool amend_single = false;
 static bool verbose = false;
+static bool today = false;
 static git_repository *repo;
 
 static void
@@ -29,7 +30,7 @@ giterr(const char *fn)
 static void
 usage(char *prog)
 {
-	const char *usage = "[-a] [-v] revspec";
+	const char *usage = "[-a] [-t] [-v] revspec";
 
 	fprintf(stderr, "USAGE: %s %s\n", basename(prog), usage);
 	exit(EXIT_FAILURE);
@@ -46,7 +47,7 @@ randtime(git_time *dest, const git_time *orig)
 		err(EXIT_FAILURE, "getentropy failed");
 
 	/* https://github.com/libgit2/libgit2/blob/79d0e0c10ffec81152b5b1eaeb47b59adf1d4bcc/examples/log.c#L321 */
-	t = (time_t)orig->time + (orig->offset * 60);
+	t = today ? time(NULL) : (time_t)orig->time + (orig->offset * 60);
 	if (!(tm = gmtime(&t)))
 		errx(EXIT_FAILURE, "gmtime failed");
 
@@ -159,10 +160,13 @@ main(int argc, char **argv)
 	if (!getcwd(cwd, sizeof(cwd)))
 		err(EXIT_FAILURE, "getcwd failed");
 
-	while ((opt = getopt(argc, argv, "av")) != -1) {
+	while ((opt = getopt(argc, argv, "atv")) != -1) {
 		switch (opt) {
 		case 'a':
 			amend_single = true;
+			break;
+		case 't':
+			today = true;
 			break;
 		case 'v':
 			verbose = true;

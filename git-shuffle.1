@@ -7,6 +7,7 @@
 .Sh SYNOPSIS
 .Nm git-shuffle
 .Op Fl a
+.Op Fl t
 .Op Fl v
 .Ar refspec
 .Sh DESCRIPTION
@@ -45,6 +46,8 @@ Amend the tip of the branch instead of rebasing.
 This causes the
 .Ar refspec
 argument to be ignored.
+.It Fl t
+When randomizing commit timestamps, use the current date instead of retaining the original commit date.
 .It Fl v
 Activate verbose output.
 For each modified commit write the commit hash to standard output.
